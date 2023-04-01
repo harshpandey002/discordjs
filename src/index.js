@@ -1,27 +1,36 @@
 import { config } from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, REST, Routes } from 'discord.js';
 
 config();
 
+const TOKEN = process.env.BOT_TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
+
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessages,
-  ],
+  intents: [GatewayIntentBits.Guilds],
 });
 
-client.login(process.env.BOT_TOKEN);
+const commands = [
+  {
+    name: 'poke',
+    description: 'Helps you poke a little',
+  },
+];
 
-client.once('ready', () => {
-  console.log(`${client.user.tag} is logged in!`);
-});
+const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-client.on('messageCreate', (message) => {
-  console.log(message.content);
-});
+async function main() {
+  try {
+    console.log('Started refreshing application (/) commands.');
 
-client.on('channelCreate', (channel) => {
-  console.log(channel);
-  console.log(channel.name);
-});
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+      body: commands,
+    });
+    client.login(TOKEN);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+main();
